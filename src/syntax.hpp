@@ -23,33 +23,33 @@ struct Syntax {
   Expr parse(Assoc &);
 };
 
-struct Number: SyntaxBase {
+struct Number : SyntaxBase {
   int n;
   Number(int);
   virtual Expr parse(Assoc &) override;
   virtual void show(std::ostream &) override;
 };
 
-struct TrueSyntax: SyntaxBase {
+struct TrueSyntax : SyntaxBase {
   // TrueSyntax();
   virtual Expr parse(Assoc &) override;
   virtual void show(std::ostream &) override;
 };
 
-struct FalseSyntax: SyntaxBase {
+struct FalseSyntax : SyntaxBase {
   // FalseSyntax();
   virtual Expr parse(Assoc &) override;
   virtual void show(std::ostream &) override;
 };
 
-struct Identifier: SyntaxBase {
+struct Identifier : SyntaxBase {
   std::string s;
   Identifier(const std::string &);
   virtual Expr parse(Assoc &) override;
   virtual void show(std::ostream &) override;
 };
 
-struct List: SyntaxBase {
+struct List : SyntaxBase {
   std::vector<Syntax> stxs;
   List();
   virtual Expr parse(Assoc &) override;

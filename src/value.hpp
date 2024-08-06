@@ -40,47 +40,47 @@ struct AssocList {
   AssocList(const std::string &, const Value &, Assoc &);
 };
 
-struct Void: ValueBase {
+struct Void : ValueBase {
   Void();
   virtual void show(std::ostream &) override;
 };
 Value VoidV();
 
-struct Integer: ValueBase {
+struct Integer : ValueBase {
   int n;
   Integer(int);
   virtual void show(std::ostream &) override;
 };
 Value IntegerV(int);
 
-struct Boolean: ValueBase {
+struct Boolean : ValueBase {
   bool b;
   Boolean(bool);
   virtual void show(std::ostream &) override;
 };
 Value BooleanV(bool);
 
-struct Symbol: ValueBase {
+struct Symbol : ValueBase {
   std::string s;
   Symbol(const std::string &);
   virtual void show(std::ostream &) override;
 };
 Value SymbolV(const std::string &);
 
-struct Null: ValueBase {
+struct Null : ValueBase {
   Null();
   virtual void show(std::ostream &) override;
   virtual void showCdr(std::ostream &) override;
 };
 Value NullV();
 
-struct Terminate: ValueBase {
+struct Terminate : ValueBase {
   Terminate();
   virtual void show(std::ostream &) override;
 };
 Value TerminateV();
 
-struct Pair: ValueBase {
+struct Pair : ValueBase {
   Value car;
   Value cdr;
   Pair(const Value &, const Value &);
@@ -89,7 +89,7 @@ struct Pair: ValueBase {
 };
 Value PairV(const Value &, const Value &);
 
-struct Closure: ValueBase {
+struct Closure : ValueBase {
   std::vector<std::string> parameters;
   Expr e;
   Assoc env;
@@ -98,7 +98,7 @@ struct Closure: ValueBase {
 };
 Value ClosureV(const std::vector<std::string> &, const Expr &, const Assoc &);
 
-struct String: ValueBase {
+struct String : ValueBase {
   std::string s;
   String(const std::string &);
   virtual void show(std::ostream &) override;

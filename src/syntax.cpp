@@ -2,25 +2,25 @@
 #include <cstring>
 #include <vector>
 
-Syntax::Syntax(SyntaxBase *stx): ptr(stx) {}
+Syntax::Syntax(SyntaxBase *stx) : ptr(stx) {}
 SyntaxBase *Syntax::operator->() const { return ptr.get(); }
 SyntaxBase &Syntax::operator*() { return *ptr; }
 SyntaxBase *Syntax::get() const { return ptr.get(); }
 
-Number::Number(int n): n(n) {}
+Number::Number(int n) : n(n) {}
 void Number::show(std::ostream &os) { os << "the-number-" << n; }
 
 void TrueSyntax::show(std::ostream &os) { os << "#t"; }
 
 void FalseSyntax::show(std::ostream &os) { os << "#f"; }
 
-Identifier::Identifier(const std::string &s1): s(s1) {}
+Identifier::Identifier(const std::string &s1) : s(s1) {}
 void Identifier::show(std::ostream &os) { os << s; }
 
 List::List() {}
 void List::show(std::ostream &os) {
   os << '(';
-  for (auto stx: stxs) {
+  for (auto stx : stxs) {
     stx->show(os);
     os << ' ';
   }

@@ -4,7 +4,7 @@
 #include <exception>
 #include <string>
 
-class RuntimeError: std::exception {
+class RuntimeError : std::exception {
 private:
   std::string s;
 

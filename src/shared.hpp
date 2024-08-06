@@ -14,10 +14,10 @@ private:
 
 public:
   // default constructor
-  SharedPtr(): ptr(nullptr), count(nullptr) {}
+  SharedPtr() : ptr(nullptr), count(nullptr) {}
 
   // constructor
-  explicit SharedPtr(T *pointer): ptr(pointer) {
+  explicit SharedPtr(T *pointer) : ptr(pointer) {
     if (pointer)
       count = new int, *count = 1;
     else
@@ -25,7 +25,7 @@ public:
   }
 
   // copy constructors
-  SharedPtr(const SharedPtr &other): ptr(other.ptr), count(other.count) {
+  SharedPtr(const SharedPtr &other) : ptr(other.ptr), count(other.count) {
     if (this == &other)
       return;
     if (count)
@@ -43,7 +43,7 @@ public:
     return *this;
   }
 
-  int use_count() { return count ? *count: 0; }
+  int use_count() { return count ? *count : 0; }
   T *get() const { return ptr; }
 
   // operator * and operator ->

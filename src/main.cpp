@@ -16,16 +16,17 @@ void REPL() {
   while (1) {
     printf("scm> ");
     Syntax stx = readSyntax(std::cin); // read
+    stx->show(std::cout);
     try {
-      Expr expr = stx->parse(global_env); // parse
+      // Expr expr = stx->parse(global_env); // parse
       // stx->show(std::cout); // syntax print
-      Value val = expr->eval(global_env);
-      if (val->v_type == V_TERMINATE)
-        break;
-      val->show(std::cout); // value print
+      // Value val = expr->eval(global_env);
+      // if (val->v_type == V_TERMINATE)
+      //   break;
+      // val->show(std::cout); // value print
     } catch (const RuntimeError &RE) {
-      // std::cout << RE.message();
-      std::cout << "RuntimeError";
+      std::cout << RE.message();
+      // std::cout << "RuntimeError";
     }
     puts("");
   }

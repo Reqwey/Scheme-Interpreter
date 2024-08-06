@@ -7,27 +7,288 @@
 #include "RE.hpp"
 #include "expr.hpp"
 #include "syntax.hpp"
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <map>
-#define mp make_pair
 using std::pair;
+using std::runtime_error;
 using std::string;
 using std::vector;
 
 extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
 
-Expr Syntax::parse(Assoc &env) {}
+Expr Syntax::parse(Assoc &env) {
+  if (get() == nullptr)
+    throw runtime_error("unexpected EOF");
+  return get()->parse(env);
+}
 
-Expr Number::parse(Assoc &env) {}
+Expr Number::parse(Assoc &env) { return Expr(new Fixnum(n)); }
 
-Expr Identifier::parse(Assoc &env) {}
+Expr Identifier::parse(Assoc &env) {
+  switch (primitives[s]) {
+  case E_MUL:
+    return Expr(new Mult(nullptr, nullptr));
 
-Expr TrueSyntax::parse(Assoc &env) {}
+  case E_MINUS:
+    return Expr(new Minus(nullptr, nullptr));
 
-Expr FalseSyntax::parse(Assoc &env) {}
+  case E_PLUS:
+    return Expr(new Plus(nullptr, nullptr));
 
-Expr List::parse(Assoc &env) {}
+  case E_LT:
+    return Expr(new Less(nullptr, nullptr));
+
+  case E_LE:
+    return Expr(new LessEq(nullptr, nullptr));
+
+  case E_EQ:
+    return Expr(new Equal(nullptr, nullptr));
+
+  case E_GE:
+    return Expr(new GreaterEq(nullptr, nullptr));
+
+  case E_GT:
+    return Expr(new Greater(nullptr, nullptr));
+
+  case E_VOID:
+    return Expr(new MakeVoid());
+
+  case E_EQQ:
+    return Expr(new IsEq(nullptr, nullptr));
+
+  case E_BOOLQ:
+    return Expr(new IsBoolean(nullptr));
+
+  case E_INTQ:
+    return Expr(new IsFixnum(nullptr));
+
+  case E_NULLQ:
+    return Expr(new IsNull(nullptr));
+
+  case E_PAIRQ:
+    return Expr(new IsPair(nullptr));
+
+  case E_PROCQ:
+    return Expr(new IsProcedure(nullptr));
+
+  case E_SYMBOLQ:
+    return Expr(new IsSymbol(nullptr));
+
+  case E_CONS:
+    return Expr(new Cons(nullptr, nullptr));
+
+  case E_NOT:
+    return Expr(new Not(nullptr));
+
+  case E_CAR:
+    return Expr(new Car(nullptr));
+
+  case E_CDR:
+    return Expr(new Cdr(nullptr));
+
+  case E_EXIT:
+    return Expr(new Exit());
+
+  default:
+    break;
+  }
+
+  if (reserved_words[s]) {
+    throw runtime_error("Transformer may not be used as an expression");
+  }
+
+  return Expr(new Var(s));
+}
+
+Expr TrueSyntax::parse(Assoc &env) { return Expr(new True()); }
+
+Expr FalseSyntax::parse(Assoc &env) { return Expr(new False()); }
+
+#define checkArgc(num, arr)                                                    \
+  if (arr.size() != num) {                                                     \
+    throw runtime_error("Expect " #num " argument(s), found " + arr.size());   \
+  }
+
+Expr List::parse(Assoc &env) {
+  if (stxs.empty()) {
+    return Expr(new MakeVoid());
+  }
+  try {
+    string s = (dynamic_cast<Identifier *>(stxs[0].get()))->s;
+    stxs.erase(stxs.begin());
+
+    switch (primitives[s]) {
+    case E_MUL:
+      checkArgc(2, stxs);
+      return Expr(new Mult(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_MINUS:
+      checkArgc(2, stxs);
+      return Expr(new Minus(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_PLUS:
+      checkArgc(2, stxs);
+      return Expr(new Plus(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_LT:
+      checkArgc(2, stxs);
+      return Expr(new Less(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_LE:
+      checkArgc(2, stxs);
+      return Expr(new LessEq(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_EQ:
+      checkArgc(2, stxs);
+      return Expr(new Equal(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_GE:
+      checkArgc(2, stxs);
+      return Expr(new GreaterEq(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_GT:
+      checkArgc(2, stxs);
+      return Expr(new Greater(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_VOID:
+      checkArgc(0, stxs);
+      return Expr(new MakeVoid());
+
+    case E_EQQ:
+      checkArgc(2, stxs);
+      return Expr(new IsEq(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_BOOLQ:
+      checkArgc(2, stxs);
+      return Expr(new IsBoolean(stxs[0].parse(env)));
+
+    case E_INTQ:
+      checkArgc(1, stxs);
+      return Expr(new IsFixnum(stxs[0].parse(env)));
+
+    case E_NULLQ:
+      checkArgc(1, stxs);
+      return Expr(new IsNull(stxs[0].parse(env)));
+
+    case E_PAIRQ:
+      checkArgc(1, stxs);
+      return Expr(new IsPair(stxs[0].parse(env)));
+
+    case E_PROCQ:
+      checkArgc(1, stxs);
+      return Expr(new IsProcedure(stxs[0].parse(env)));
+
+    case E_SYMBOLQ:
+      checkArgc(1, stxs);
+      return Expr(new IsSymbol(stxs[0].parse(env)));
+
+    case E_CONS:
+      checkArgc(2, stxs);
+      return Expr(new Cons(stxs[0].parse(env), stxs[1].parse(env)));
+
+    case E_NOT:
+      checkArgc(1, stxs);
+      return Expr(new Not(stxs[0].parse(env)));
+
+    case E_CAR:
+      checkArgc(1, stxs);
+      return Expr(new Car(stxs[0].parse(env)));
+
+    case E_CDR:
+      checkArgc(1, stxs);
+      return Expr(new Cdr(stxs[0].parse(env)));
+
+    case E_EXIT:
+      checkArgc(0, stxs);
+      return Expr(new Exit());
+
+    default:
+      break;
+    }
+
+    switch (reserved_words[s]) {
+    case E_LET: {
+      checkArgc(2, stxs);
+
+      auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+      vector<std::pair<string, Expr>> transformedHeader;
+
+      for (auto &syn : header) {
+        auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
+
+        checkArgc(2, syn_v);
+
+        try {
+          string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
+
+          if (primitives[bind] || reserved_words[bind])
+            throw std::bad_cast();
+
+          transformedHeader.push_back(
+              std::make_pair(bind, syn_v[1].parse(env)));
+        } catch (std::bad_cast &) {
+          throw runtime_error("The object is not bindable");
+        }
+      }
+
+      return Expr(new Let(transformedHeader, stxs[1].parse(env)));
+    }
+
+    case E_LAMBDA: {
+      checkArgc(2, stxs);
+
+      auto args = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+      vector<string> transformedArgs;
+
+      for (auto &syn : args) {
+        transformedArgs.push_back(dynamic_cast<Identifier *>(syn.get())->s);
+      }
+
+      return Expr(new Lambda(transformedArgs, stxs[1].parse(env)));
+    }
+
+    case E_LETREC: {
+      checkArgc(2, stxs);
+
+      auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+      vector<std::pair<string, Expr>> transformedHeader;
+
+      for (auto &syn : header) {
+        auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
+
+        checkArgc(2, syn_v);
+
+        try {
+          string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
+
+          if (primitives[bind] || reserved_words[bind])
+            throw std::bad_cast();
+
+          transformedHeader.push_back(
+              std::make_pair(bind, syn_v[1].parse(env)));
+        } catch (std::bad_cast &) {
+          throw runtime_error("The object is not bindable");
+        }
+      }
+
+      return Expr(new Letrec(transformedHeader, stxs[1].parse(env)));
+    }
+
+    case E_IF:
+      checkArgc(3, stxs);
+
+      return Expr(
+          new If(stxs[0].parse(env), stxs[1].parse(env), stxs[2].parse(env)));
+
+    default:
+      break;
+    }
+  } catch (std::bad_cast &) {
+    throw runtime_error("The object is not applicable");
+  }
+}
 
 #endif

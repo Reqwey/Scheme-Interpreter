@@ -1,9 +1,9 @@
 #include "value.hpp"
 
 AssocList::AssocList(const std::string &x, const Value &v, Assoc &next)
-   : x(x), v(v), next(next) {}
+    : x(x), v(v), next(next) {}
 
-Assoc::Assoc(AssocList *x): ptr(x) {}
+Assoc::Assoc(AssocList *x) : ptr(x) {}
 AssocList *Assoc::operator->() const { return ptr.get(); }
 AssocList &Assoc::operator*() { return *ptr; }
 AssocList *Assoc::get() const { return ptr.get(); }
@@ -44,7 +44,7 @@ void Void::show(std::ostream &os) { os << "#<void>"; }
 
 void Integer::show(std::ostream &os) { os << n; }
 
-void Boolean::show(std::ostream &os) { os << (b ? "#t": "#f"); }
+void Boolean::show(std::ostream &os) { os << (b ? "#t" : "#f"); }
 
 void Symbol::show(std::ostream &os) { os << s; }
 
@@ -66,40 +66,40 @@ void Pair::showCdr(std::ostream &os) {
 
 void Closure::show(std::ostream &os) { os << "#<procedure>"; }
 
-ValueBase::ValueBase(ValueType vt): v_type(vt) {}
+ValueBase::ValueBase(ValueType vt) : v_type(vt) {}
 
-Value::Value(ValueBase *ptr): ptr(ptr) {}
+Value::Value(ValueBase *ptr) : ptr(ptr) {}
 ValueBase *Value::operator->() const { return ptr.get(); }
 ValueBase &Value::operator*() { return *ptr; }
 ValueBase *Value::get() const { return ptr.get(); }
 
-Void::Void(): ValueBase(V_VOID) {}
+Void::Void() : ValueBase(V_VOID) {}
 Value VoidV() { return Value(new Void()); }
 
-Integer::Integer(int n): ValueBase(V_INT), n(n) {}
+Integer::Integer(int n) : ValueBase(V_INT), n(n) {}
 Value IntegerV(int n) { return Value(new Integer(n)); }
 
-Boolean::Boolean(bool b): ValueBase(V_BOOL), b(b) {}
+Boolean::Boolean(bool b) : ValueBase(V_BOOL), b(b) {}
 Value BooleanV(bool b) { return Value(new Boolean(b)); }
 
-Symbol::Symbol(const std::string &s): ValueBase(V_SYM), s(s) {}
+Symbol::Symbol(const std::string &s) : ValueBase(V_SYM), s(s) {}
 Value SymbolV(const std::string &s) { return Value(new Symbol(s)); }
 
-Null::Null(): ValueBase(V_NULL) {}
+Null::Null() : ValueBase(V_NULL) {}
 Value NullV() { return Value(new Null()); }
 
-Terminate::Terminate(): ValueBase(V_TERMINATE) {}
+Terminate::Terminate() : ValueBase(V_TERMINATE) {}
 Value TerminateV() { return Value(new Terminate()); }
 
 Pair::Pair(const Value &car, const Value &cdr)
-   : ValueBase(V_PAIR), car(car), cdr(cdr) {}
+    : ValueBase(V_PAIR), car(car), cdr(cdr) {}
 Value PairV(const Value &car, const Value &cdr) {
   return Value(new Pair(car, cdr));
 }
 
 Closure::Closure(const std::vector<std::string> &xs, const Expr &e,
                  const Assoc &env)
-   : ValueBase(V_PROC), parameters(xs), e(e), env(env) {}
+    : ValueBase(V_PROC), parameters(xs), e(e), env(env) {}
 Value ClosureV(const std::vector<std::string> &xs, const Expr &e,
                const Assoc &env) {
   return Value(new Closure(xs, e, env));
