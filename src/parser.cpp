@@ -283,8 +283,21 @@ Expr List::parse(Assoc &env) {
       return Expr(
           new If(stxs[0].parse(env), stxs[1].parse(env), stxs[2].parse(env)));
 
+    case E_BEGIN: {
+      vector<Expr> es;
+      std::transform(stxs.begin(), stxs.end(), es.begin(),
+                     [&env](Syntax syn) { return syn.parse(env); });
+      return Expr(new Begin(es));
+    }
+
+    case E_QUOTE: {
+      checkArgc(1, stxs);
+
+      return Expr(new Quote(stxs[0]));
+    }
+
     default:
-      break;
+      throw runtime_error("Unknown operation");
     }
   } catch (std::bad_cast &) {
     throw runtime_error("The object is not applicable");
