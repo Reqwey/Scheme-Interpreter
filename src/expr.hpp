@@ -38,9 +38,9 @@ struct Lambda : ExprBase {
 };
 
 struct Apply : ExprBase {
-  Expr rator;
+  std::string name;
   std::vector<Expr> rand;
-  Apply(const Expr &, const std::vector<Expr> &);
+  Apply(const std::string &, const std::vector<Expr> &);
   virtual Value eval(Assoc &) override;
 }; // this is used to handle function calling, where rator is the operator and
    // rands are operands

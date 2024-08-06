@@ -19,8 +19,8 @@ Let::Let(const vector<pair<string, Expr>> &vec, const Expr &e)
 Lambda::Lambda(const vector<string> &vec, const Expr &expr)
     : ExprBase(E_LAMBDA), x(vec), e(expr) {}
 
-Apply::Apply(const Expr &expr, const vector<Expr> &vec)
-    : ExprBase(E_APPLY), rator(expr), rand(vec) {}
+Apply::Apply(const string &s, const vector<Expr> &vec)
+    : ExprBase(E_APPLY), name(s), rand(vec) {}
 
 Letrec::Letrec(const vector<pair<string, Expr>> &vec, const Expr &expr)
     : ExprBase(E_LETREC), bind(vec), body(expr) {}

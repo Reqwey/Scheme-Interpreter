@@ -7,6 +7,7 @@
 #include "RE.hpp"
 #include "expr.hpp"
 #include "syntax.hpp"
+#include "value.hpp"
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -96,10 +97,6 @@ Expr Identifier::parse(Assoc &env) {
     break;
   }
 
-  if (reserved_words[s]) {
-    throw runtime_error("Transformer may not be used as an expression");
-  }
-
   return Expr(new Var(s));
 }
 
@@ -109,7 +106,8 @@ Expr FalseSyntax::parse(Assoc &env) { return Expr(new False()); }
 
 #define checkArgc(num, arr)                                                    \
   if (arr.size() != num) {                                                     \
-    throw runtime_error("Expect " #num " argument(s), found " + arr.size());   \
+    throw runtime_error("Expect " #num " argument(s), found " +                \
+                        std::to_string(arr.size()));                           \
   }
 
 Expr List::parse(Assoc &env) {
@@ -211,6 +209,7 @@ Expr List::parse(Assoc &env) {
 
     switch (reserved_words[s]) {
     case E_LET: {
+      Assoc env1 = dynamic_cast<AssocList *>(env.get());
       checkArgc(2, stxs);
 
       auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
@@ -224,17 +223,23 @@ Expr List::parse(Assoc &env) {
         try {
           string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
 
-          if (primitives[bind] || reserved_words[bind])
+          if (primitives[bind])
             throw std::bad_cast();
 
-          transformedHeader.push_back(
-              std::make_pair(bind, syn_v[1].parse(env)));
+          Expr syn = syn_v[1].parse(env);
+          auto isLambda = dynamic_cast<Lambda *>(syn.get());
+
+          if (isLambda) {
+            extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
+          }
+
+          transformedHeader.push_back(std::make_pair(bind, syn));
         } catch (std::bad_cast &) {
           throw runtime_error("The object is not bindable");
         }
       }
 
-      return Expr(new Let(transformedHeader, stxs[1].parse(env)));
+      return Expr(new Let(transformedHeader, stxs[1].parse(env1)));
     }
 
     case E_LAMBDA: {
@@ -251,6 +256,7 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_LETREC: {
+      Assoc env1 = dynamic_cast<AssocList *>(env.get());
       checkArgc(2, stxs);
 
       auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
@@ -264,17 +270,23 @@ Expr List::parse(Assoc &env) {
         try {
           string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
 
-          if (primitives[bind] || reserved_words[bind])
+          if (primitives[bind])
             throw std::bad_cast();
 
-          transformedHeader.push_back(
-              std::make_pair(bind, syn_v[1].parse(env)));
+          Expr syn = syn_v[1].parse(env);
+          auto isLambda = dynamic_cast<Lambda *>(syn.get());
+
+          if (isLambda) {
+            extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
+          }
+
+          transformedHeader.push_back(std::make_pair(bind, syn));
         } catch (std::bad_cast &) {
           throw runtime_error("The object is not bindable");
         }
       }
 
-      return Expr(new Letrec(transformedHeader, stxs[1].parse(env)));
+      return Expr(new Letrec(transformedHeader, stxs[1].parse(env1)));
     }
 
     case E_IF:
@@ -285,8 +297,8 @@ Expr List::parse(Assoc &env) {
 
     case E_BEGIN: {
       vector<Expr> es;
-      std::transform(stxs.begin(), stxs.end(), es.begin(),
-                     [&env](Syntax syn) { return syn.parse(env); });
+      for (auto &i : stxs)
+        es.push_back(i.parse(env));
       return Expr(new Begin(es));
     }
 
@@ -297,6 +309,18 @@ Expr List::parse(Assoc &env) {
     }
 
     default:
+      auto fn = dynamic_cast<Closure *>(find(s, env).get());
+
+      if (fn) {
+        checkArgc(fn->parameters.size(), stxs);
+
+        vector<Expr> es;
+        for (auto &i : stxs)
+          es.push_back(i.parse(env));
+
+        return Expr(new Apply(s, es));
+      }
+
       throw runtime_error("Unknown operation");
     }
   } catch (std::bad_cast &) {
