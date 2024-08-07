@@ -23,17 +23,17 @@ Value Lambda::eval(Assoc &env) {
 } // lambda expression
 
 Value Apply::eval(Assoc &e) {
-  auto lambda = dynamic_cast<Lambda *>(find(name, e).get());
-  if (!lambda)
+  auto closure = dynamic_cast<Closure *>(find(name, e).get());
+  if (!closure)
     throw std::runtime_error("Cannot find the function");
 
   Assoc e1 = Assoc(e);
 
-  for (size_t i = 0; i < lambda->x.size(); ++i) {
-    e1 = extend(lambda->x[i], this->rand[i].get()->eval(e), e1);
+  for (size_t i = 0; i < closure->parameters.size(); ++i) {
+    e1 = extend(closure->parameters[i], this->rand[i].get()->eval(e), e1);
   }
 
-  return lambda->e.get()->eval(e1);
+  return closure->e.get()->eval(e1);
 } // for function calling
 
 Value Letrec::eval(Assoc &env) {
