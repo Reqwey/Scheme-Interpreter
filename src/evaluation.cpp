@@ -35,8 +35,8 @@ Value Apply::eval(Assoc &env) {
 
     Assoc env1 = Assoc(closure->env);
     for (size_t i = 0; i < closure->parameters.size(); ++i) {
-      env1 = extend(closure->parameters[i],
-                    this->rand[i].get()->eval(env), env1);
+      env1 =
+          extend(closure->parameters[i], this->rand[i].get()->eval(env), env1);
     }
 
     return closure->e.get()->eval(env1);
@@ -118,16 +118,12 @@ Value quoteFromSyn(Syntax s) {
 
   auto list = dynamic_cast<List *>(s.get());
   if (list) {
-    switch (list->stxs.size()) {
-    case 0:
+    if (list->stxs.size() == 0) {
       return NullV();
-    case 1:
-      return quoteFromSyn(list->stxs[0]);
-    default:
+    } else {
       size_t sz = list->stxs.size();
-      auto res = PairV(quoteFromSyn(list->stxs[sz - 2]),
-                       quoteFromSyn(list->stxs[sz - 1]));
-      for (int i = sz - 3; i >= 0; --i)
+      auto res = PairV(quoteFromSyn(list->stxs[sz - 1]), NullV());
+      for (int i = sz - 2; i >= 0; --i)
         res = PairV(quoteFromSyn(list->stxs[i]), res);
       return res;
     }
@@ -231,6 +227,9 @@ Value Greater::evalRator(const Value &rand1, const Value &rand2) {
 } // >
 
 bool isEqual(const Value &rand1, const Value &rand2) {
+  if (rand1.get() == rand2.get())
+    return true;
+
   auto sym1 = dynamic_cast<Symbol *>(rand1.get());
   auto sym2 = dynamic_cast<Symbol *>(rand2.get());
   if (sym1 && sym2) {
@@ -241,6 +240,12 @@ bool isEqual(const Value &rand1, const Value &rand2) {
   auto num2 = dynamic_cast<Integer *>(rand2.get());
   if (num1 && num2) {
     return num1->n == num2->n;
+  }
+
+  auto nul1 = dynamic_cast<Null *>(rand1.get());
+  auto nul2 = dynamic_cast<Null *>(rand2.get());
+  if (nul1 && nul2) {
+    return true;
   }
 
   // auto str1 = dynamic_cast<String *>(rand1.get());
@@ -281,7 +286,7 @@ Value IsBoolean::evalRator(const Value &rand) {
 } // boolean?
 
 Value IsFixnum::evalRator(const Value &rand) {
-  auto ptr = dynamic_cast<Fixnum *>(rand.get());
+  auto ptr = dynamic_cast<Integer *>(rand.get());
   if (ptr)
     return BooleanV(true);
   else

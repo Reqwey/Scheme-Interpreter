@@ -165,7 +165,7 @@ Expr List::parse(Assoc &env) {
           return Expr(new IsEq(stxs[0].parse(env), stxs[1].parse(env)));
 
         case E_BOOLQ:
-          checkArgc(2, stxs);
+          checkArgc(1, stxs);
           return Expr(new IsBoolean(stxs[0].parse(env)));
 
         case E_INTQ:
