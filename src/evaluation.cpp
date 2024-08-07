@@ -22,18 +22,27 @@ Value Lambda::eval(Assoc &env) {
   return ClosureV(x, e, env);
 } // lambda expression
 
-Value Apply::eval(Assoc &e) {
-  auto closure = dynamic_cast<Closure *>(find(name, e).get());
-  if (!closure)
-    throw std::runtime_error("Cannot find the function");
+Value Apply::eval(Assoc &env) {
+  Value rator = this->rator.get()->eval(env);
 
-  Assoc e1 = Assoc(e);
+  auto closure = dynamic_cast<Closure *>(rator.get());
+  if (closure) {
+    if (closure->parameters.size() != this->rand.size()) {
+      throw std::runtime_error(
+          "Expect " + std::to_string(closure->parameters.size()) +
+          " argument(s), found " + std::to_string(this->rand.size()));
+    }
 
-  for (size_t i = 0; i < closure->parameters.size(); ++i) {
-    e1 = extend(closure->parameters[i], this->rand[i].get()->eval(e), e1);
+    Assoc env1 = Assoc(closure->env);
+    for (size_t i = 0; i < closure->parameters.size(); ++i) {
+      env1 = extend(closure->parameters[i],
+                    this->rand[i].get()->eval(env), env1);
+    }
+
+    return closure->e.get()->eval(env1);
   }
 
-  return closure->e.get()->eval(e1);
+  throw std::runtime_error("Bad function call");
 } // for function calling
 
 Value Letrec::eval(Assoc &env) {
@@ -116,7 +125,8 @@ Value quoteFromSyn(Syntax s) {
       return quoteFromSyn(list->stxs[0]);
     default:
       size_t sz = list->stxs.size();
-      auto res = PairV(quoteFromSyn(list->stxs[sz - 2]), quoteFromSyn(list->stxs[sz - 1]));
+      auto res = PairV(quoteFromSyn(list->stxs[sz - 2]),
+                       quoteFromSyn(list->stxs[sz - 1]));
       for (int i = sz - 3; i >= 0; --i)
         res = PairV(quoteFromSyn(list->stxs[i]), res);
       return res;
