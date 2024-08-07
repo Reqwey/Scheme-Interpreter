@@ -209,7 +209,7 @@ Expr List::parse(Assoc &env) {
 
     switch (reserved_words[s]) {
     case E_LET: {
-      Assoc env1 = dynamic_cast<AssocList *>(env.get());
+      Assoc env1 = Assoc(env);
       checkArgc(2, stxs);
 
       auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
@@ -230,7 +230,7 @@ Expr List::parse(Assoc &env) {
           auto isLambda = dynamic_cast<Lambda *>(syn.get());
 
           if (isLambda) {
-            extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
+            env1 = extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
           }
 
           transformedHeader.push_back(std::make_pair(bind, syn));
@@ -256,7 +256,7 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_LETREC: {
-      Assoc env1 = dynamic_cast<AssocList *>(env.get());
+      Assoc env1 = Assoc(env);
       checkArgc(2, stxs);
 
       auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
@@ -277,7 +277,7 @@ Expr List::parse(Assoc &env) {
           auto isLambda = dynamic_cast<Lambda *>(syn.get());
 
           if (isLambda) {
-            extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
+            env1 = extend(bind, ClosureV(isLambda->x, isLambda->e, env1), env1);
           }
 
           transformedHeader.push_back(std::make_pair(bind, syn));

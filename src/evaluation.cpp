@@ -11,11 +11,11 @@ extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
 
 Value Let::eval(Assoc &env) {
-  Assoc e = dynamic_cast<AssocList *>(env.get());
+  Assoc env1 = Assoc(env);
   for (auto &i : bind) {
-    extend(i.first, i.second.get()->eval(env), e);
+    env1 = extend(i.first, i.second.get()->eval(env), env1);
   }
-  return body.get()->eval(e);
+  return body.get()->eval(env1);
 } // let expression
 
 Value Lambda::eval(Assoc &env) {
@@ -24,25 +24,26 @@ Value Lambda::eval(Assoc &env) {
 
 Value Apply::eval(Assoc &e) {
   auto lambda = dynamic_cast<Lambda *>(find(name, e).get());
-  if (!lambda) throw std::runtime_error("Cannot find the function");
+  if (!lambda)
+    throw std::runtime_error("Cannot find the function");
 
-  Assoc e1 = dynamic_cast<AssocList *>(e.get());
+  Assoc e1 = Assoc(e);
 
   for (size_t i = 0; i < lambda->x.size(); ++i) {
-    extend(lambda->x[i], this->rand[i].get()->eval(e), e1);
+    e1 = extend(lambda->x[i], this->rand[i].get()->eval(e), e1);
   }
 
   return lambda->e.get()->eval(e1);
 } // for function calling
 
 Value Letrec::eval(Assoc &env) {
-  Assoc env1 = dynamic_cast<AssocList *>(env.get());
+  Assoc env1 = Assoc(env);
 
   for (auto &i : this->bind) {
-    extend(i.first, NullV(), env1);
+    env1 = extend(i.first, NullV(), env1);
   }
 
-  Assoc env2 = dynamic_cast<AssocList *>(env1.get());
+  Assoc env2 = Assoc(env1);
 
   for (auto &i : this->bind) {
     modify(i.first, i.second.get()->eval(env1), env2);
@@ -97,7 +98,7 @@ Value quoteFromSyn(Syntax s) {
   if (bool_t)
     return BooleanV(true);
 
-  auto num = dynamic_cast<Fixnum *>(s.get());
+  auto num = dynamic_cast<Number *>(s.get());
   if (num)
     return IntegerV(num->n);
 
@@ -114,10 +115,10 @@ Value quoteFromSyn(Syntax s) {
     case 1:
       return quoteFromSyn(list->stxs[0]);
     default:
-      auto res =
-          PairV(quoteFromSyn(list->stxs[0]), quoteFromSyn(list->stxs[1]));
-      for (size_t i = 2; i < list->stxs.size(); ++i)
-        res = PairV(res, quoteFromSyn(list->stxs[i]));
+      size_t sz = list->stxs.size();
+      auto res = PairV(quoteFromSyn(list->stxs[sz - 2]), quoteFromSyn(list->stxs[sz - 1]));
+      for (int i = sz - 3; i >= 0; --i)
+        res = PairV(quoteFromSyn(list->stxs[i]), res);
       return res;
     }
   }
@@ -219,26 +220,42 @@ Value Greater::evalRator(const Value &rand1, const Value &rand2) {
   }
 } // >
 
-Value IsEq::evalRator(const Value &rand1, const Value &rand2) {
+bool isEqual(const Value &rand1, const Value &rand2) {
   auto sym1 = dynamic_cast<Symbol *>(rand1.get());
   auto sym2 = dynamic_cast<Symbol *>(rand2.get());
   if (sym1 && sym2) {
-    return BooleanV(sym1->s == sym2->s);
+    return sym1->s == sym2->s;
   }
 
   auto num1 = dynamic_cast<Integer *>(rand1.get());
   auto num2 = dynamic_cast<Integer *>(rand2.get());
   if (num1 && num2) {
-    return BooleanV(num1->n == num2->n);
+    return num1->n == num2->n;
   }
 
   // auto str1 = dynamic_cast<String *>(rand1.get());
   // auto str2 = dynamic_cast<String *>(rand2.get());
   // if (str1 && str2) {
-  //   return BooleanV(str1->s == str2->s);
+  //   return str1->s == str2->s;
   // }
 
-  return BooleanV(false);
+  auto var1 = dynamic_cast<Var *>(rand1.get());
+  auto var2 = dynamic_cast<Var *>(rand2.get());
+  if (var1 && var2) {
+    return var1->x == var2->x;
+  }
+
+  auto cons1 = dynamic_cast<Pair *>(rand1.get());
+  auto cons2 = dynamic_cast<Pair *>(rand2.get());
+  if (cons1 && cons2) {
+    return isEqual(cons1->car, cons2->car) && isEqual(cons1->cdr, cons2->cdr);
+  }
+
+  return false;
+}
+
+Value IsEq::evalRator(const Value &rand1, const Value &rand2) {
+  return BooleanV(isEqual(rand1, rand2));
 } // eq?
 
 Value Cons::evalRator(const Value &rand1, const Value &rand2) {
