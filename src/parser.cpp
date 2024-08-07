@@ -121,8 +121,9 @@ Expr List::parse(Assoc &env) {
       stxs.erase(stxs.begin());
 
       auto at_pri = primitives.find(s);
-
-      if (at_pri != primitives.end()) {
+      if (at_pri == primitives.end() && !stxs.size()) {
+        return Expr(new Var(s));
+      } else if (at_pri != primitives.end()) {
         switch (primitives[s]) {
         case E_MUL:
           checkArgc(2, stxs);

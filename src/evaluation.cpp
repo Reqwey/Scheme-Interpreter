@@ -260,12 +260,6 @@ bool isEqual(const Value &rand1, const Value &rand2) {
     return var1->x == var2->x;
   }
 
-  auto cons1 = dynamic_cast<Pair *>(rand1.get());
-  auto cons2 = dynamic_cast<Pair *>(rand2.get());
-  if (cons1 && cons2) {
-    return isEqual(cons1->car, cons2->car) && isEqual(cons1->cdr, cons2->cdr);
-  }
-
   return false;
 }
 
