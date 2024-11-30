@@ -17,17 +17,17 @@ void REPL() {
 #ifndef ONLINE_JUDGE
     std::cout << "scm> ";
 #endif
-    Syntax stx = readSyntax(std ::cin); // read
+    Syntax stx = readSyntax(std::cin); // read
     try {
       Expr expr = stx->parse(global_env); // parse
       // stx -> show(std :: cout); // syntax print
       Value val = expr->eval(global_env);
       if (val->v_type == V_TERMINATE)
         break;
-      val->show(std ::cout); // value print
+      val->show(std::cout); // value print
     } catch (const RuntimeError &RE) {
       // std :: cout << RE.message();
-      std ::cout << "RuntimeError";
+      std::cout << "RuntimeError";
     }
     puts("");
   }

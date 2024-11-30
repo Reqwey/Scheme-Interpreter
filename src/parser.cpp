@@ -235,7 +235,7 @@ Expr List::parse(Assoc &env) {
             env1 = extend(s, VoidV(), env1);
           }
 
-          return Expr(new Lambda(transformedArgs, stxs[1].parse(env)));
+          return Expr(new Lambda(transformedArgs, stxs[1].parse(env1)));
         }
 
         case E_LET: {
