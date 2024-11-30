@@ -1,6 +1,6 @@
 build
 myscheme
 
-score/*.txt
+score/diff_output.txt
 
-score/*.out
+score/scm.out
