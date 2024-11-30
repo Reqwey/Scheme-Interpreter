@@ -60,6 +60,7 @@ enum ValueType {
   V_PROC,
   V_VOID,
   V_PRIMITIVE,
+  V_EXPRESSION,
   V_TERMINATE
 };
 

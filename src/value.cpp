@@ -66,6 +66,8 @@ void Pair::showCdr(std::ostream &os) {
 
 void Closure::show(std::ostream &os) { os << "#<procedure>"; }
 
+void Expression::show(std::ostream &os) {}
+
 ValueBase::ValueBase(ValueType vt) : v_type(vt) {}
 
 Value::Value(ValueBase *ptr) : ptr(ptr) {}
@@ -103,4 +105,9 @@ Closure::Closure(const std::vector<std::string> &xs, const Expr &e,
 Value ClosureV(const std::vector<std::string> &xs, const Expr &e,
                const Assoc &env) {
   return Value(new Closure(xs, e, env));
+}
+
+Expression::Expression(const Expr &e) : ValueBase(V_EXPRESSION), e(e) {}
+Value ExpressionV(const Expr &e) {
+  return Value(new Expression(e));
 }

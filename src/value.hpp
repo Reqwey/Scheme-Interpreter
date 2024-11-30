@@ -105,6 +105,13 @@ struct String : ValueBase {
 };
 Value StringV(const std::string &);
 
+struct Expression : ValueBase {
+  Expr e;
+  Expression(const Expr &);
+  virtual void show(std::ostream &) override;
+};
+Value ExpressionV(const Expr &);
+
 std::ostream &operator<<(std::ostream &, Value &);
 
 Assoc empty();

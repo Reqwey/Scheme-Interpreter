@@ -29,6 +29,10 @@ Expr Syntax::parse(Assoc &env) {
 Expr Number::parse(Assoc &env) { return Expr(new Fixnum(n)); }
 
 Expr Identifier::parse(Assoc &env) {
+  Value res = find(s, env);
+  if (res.get())
+    return Expr(new Var(s));
+
   switch (primitives[s]) {
   case E_VOID:
     return Expr(new MakeVoid());
@@ -111,6 +115,16 @@ Expr List::parse(Assoc &env) {
       stxs.erase(stxs.begin());
 
       auto at_pri = primitives.find(s);
+      auto at_res = reserved_words.find(s);
+
+      Value res = find(s, env);
+      auto expression = dynamic_cast<Expression *>(res.get());
+      if (expression) {
+        auto lam = dynamic_cast<Lambda *>(expression->e.get());
+        if (lam)
+          goto apply;
+      }
+
       if (at_pri == primitives.end() && !stxs.size()) {
         return Expr(new Var(s));
       } else if (at_pri != primitives.end()) {
@@ -203,48 +217,47 @@ Expr List::parse(Assoc &env) {
           break;
         }
       }
-      auto at_res = reserved_words.find(s);
 
       if (at_res != reserved_words.end()) {
         switch (reserved_words[s]) {
-        case E_LET: {
-          checkArgc(2, stxs);
-
-          auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
-          vector<std::pair<string, Expr>> transformedHeader;
-
-          for (auto &syn : header) {
-            auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
-
-            checkArgc(2, syn_v);
-
-            try {
-              string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
-
-              if (primitives[bind])
-                throw std::bad_cast();
-
-              transformedHeader.push_back(
-                  std::make_pair(bind, syn_v[1].parse(env)));
-            } catch (std::bad_cast &) {
-              throw runtime_error("The object is not bindable");
-            }
-          }
-
-          return Expr(new Let(transformedHeader, stxs[1].parse(env)));
-        }
-
         case E_LAMBDA: {
           checkArgc(2, stxs);
 
           auto args = (dynamic_cast<List *>(stxs[0].get()))->stxs;
           vector<string> transformedArgs;
 
+          Assoc env1 = Assoc(env);
+
           for (auto &syn : args) {
-            transformedArgs.push_back(dynamic_cast<Identifier *>(syn.get())->s);
+            string s = dynamic_cast<Identifier *>(syn.get())->s;
+            transformedArgs.push_back(s);
+            env1 = extend(s, VoidV(), env1);
           }
 
           return Expr(new Lambda(transformedArgs, stxs[1].parse(env)));
+        }
+
+        case E_LET: {
+          checkArgc(2, stxs);
+
+          auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+          vector<std::pair<string, Expr>> transformedHeader;
+
+          Assoc env1 = Assoc(env);
+
+          for (auto &syn : header) {
+            auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
+
+            checkArgc(2, syn_v);
+
+            string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
+            Expr parsed = syn_v[1].parse(env);
+
+            transformedHeader.push_back(std::make_pair(bind, parsed));
+            env1 = extend(bind, ExpressionV(parsed), env1);
+          }
+
+          return Expr(new Let(transformedHeader, stxs[1].parse(env1)));
         }
 
         case E_LETREC: {
@@ -253,25 +266,21 @@ Expr List::parse(Assoc &env) {
           auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
           vector<std::pair<string, Expr>> transformedHeader;
 
+          Assoc env1 = Assoc(env);
+
           for (auto &syn : header) {
             auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
 
             checkArgc(2, syn_v);
 
-            try {
-              string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
+            string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
+            Expr parsed = syn_v[1].parse(env);
 
-              if (primitives[bind])
-                throw std::bad_cast();
-
-              transformedHeader.push_back(
-                  std::make_pair(bind, syn_v[1].parse(env)));
-            } catch (std::bad_cast &) {
-              throw runtime_error("The object is not bindable");
-            }
+            transformedHeader.push_back(std::make_pair(bind, parsed));
+            env1 = extend(bind, ExpressionV(parsed), env1);
           }
 
-          return Expr(new Letrec(transformedHeader, stxs[1].parse(env)));
+          return Expr(new Letrec(transformedHeader, stxs[1].parse(env1)));
         }
 
         case E_IF:
@@ -297,7 +306,7 @@ Expr List::parse(Assoc &env) {
           break;
         }
       }
-
+    apply:
       vector<Expr> rands;
       for (auto &i : stxs)
         rands.push_back(i.parse(env));
