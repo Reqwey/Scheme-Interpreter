@@ -30,65 +30,55 @@ Expr Number::parse(Assoc &env) { return Expr(new Fixnum(n)); }
 
 Expr Identifier::parse(Assoc &env) {
   switch (primitives[s]) {
-  case E_MUL:
-    return Expr(new Mult(nullptr, nullptr));
-
-  case E_MINUS:
-    return Expr(new Minus(nullptr, nullptr));
-
-  case E_PLUS:
-    return Expr(new Plus(nullptr, nullptr));
-
-  case E_LT:
-    return Expr(new Less(nullptr, nullptr));
-
-  case E_LE:
-    return Expr(new LessEq(nullptr, nullptr));
-
-  case E_EQ:
-    return Expr(new Equal(nullptr, nullptr));
-
-  case E_GE:
-    return Expr(new GreaterEq(nullptr, nullptr));
-
-  case E_GT:
-    return Expr(new Greater(nullptr, nullptr));
-
   case E_VOID:
     return Expr(new MakeVoid());
 
+  case E_MUL:
+  case E_MINUS:
+  case E_PLUS:
+  case E_LT:
+  case E_LE:
+  case E_EQ:
+  case E_GE:
+  case E_GT:
   case E_EQQ:
-    return Expr(new IsEq(nullptr, nullptr));
+  case E_CONS: {
+    List *args = new List();
+    args->stxs.push_back(Syntax(new Identifier("x")));
+    args->stxs.push_back(Syntax(new Identifier("y")));
+    List *stx = new List();
+    stx->stxs.push_back(Syntax(new Identifier(s)));
+    stx->stxs.push_back(Syntax(new Identifier("x")));
+    stx->stxs.push_back(Syntax(new Identifier("y")));
+    List *st = new List();
+    st->stxs.push_back(Syntax(new Identifier("lambda")));
+    st->stxs.push_back(args);
+    st->stxs.push_back(stx);
+
+    return st->parse(env);
+  }
 
   case E_BOOLQ:
-    return Expr(new IsBoolean(nullptr));
-
   case E_INTQ:
-    return Expr(new IsFixnum(nullptr));
-
   case E_NULLQ:
-    return Expr(new IsNull(nullptr));
-
   case E_PAIRQ:
-    return Expr(new IsPair(nullptr));
-
   case E_PROCQ:
-    return Expr(new IsProcedure(nullptr));
-
   case E_SYMBOLQ:
-    return Expr(new IsSymbol(nullptr));
-
-  case E_CONS:
-    return Expr(new Cons(nullptr, nullptr));
-
   case E_NOT:
-    return Expr(new Not(nullptr));
-
   case E_CAR:
-    return Expr(new Car(nullptr));
+  case E_CDR: {
+    List *args = new List();
+    args->stxs.push_back(Syntax(new Identifier("x")));
+    List *stx = new List();
+    stx->stxs.push_back(Syntax(new Identifier(s)));
+    stx->stxs.push_back(Syntax(new Identifier("x")));
+    List *st = new List();
+    st->stxs.push_back(Syntax(new Identifier("lambda")));
+    st->stxs.push_back(args);
+    st->stxs.push_back(stx);
 
-  case E_CDR:
-    return Expr(new Cdr(nullptr));
+    return st->parse(env);
+  }
 
   case E_EXIT:
     return Expr(new Exit());
