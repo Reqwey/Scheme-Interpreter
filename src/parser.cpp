@@ -126,7 +126,8 @@ Expr List::parse(Assoc &env) {
       }
 
       if (at_pri == primitives.end() && !stxs.size()) {
-        return Expr(new Var(s));
+        vector<Expr> rands;
+        return Expr(new Apply(Expr(new Var(s)), rands));
       } else if (at_pri != primitives.end()) {
         switch (primitives[s]) {
         case E_MUL:
