@@ -98,7 +98,7 @@ Value Begin::eval(Assoc &e) {
   }
 } // begin expression
 
-Value quoteFromSyn(Syntax s) {
+Value Quote::eval(Assoc &e) {
   auto bool_f = dynamic_cast<FalseSyntax *>(s.get());
   if (bool_f)
     return BooleanV(false);
@@ -122,17 +122,22 @@ Value quoteFromSyn(Syntax s) {
       return NullV();
     } else {
       size_t sz = list->stxs.size();
-      auto res = PairV(quoteFromSyn(list->stxs[sz - 1]), NullV());
-      for (int i = sz - 2; i >= 0; --i)
-        res = PairV(quoteFromSyn(list->stxs[i]), res);
+      if (sz == 3) {
+        auto isDot = dynamic_cast<Identifier *>(list->stxs[1].get());
+        if (isDot && isDot->s == ".") {
+          return PairV((Expr(new Quote(list->stxs[0]))).get()->eval(e),
+                       (Expr(new Quote(list->stxs[2]))).get()->eval(e));
+        }
+      }
+      Value res = NullV();
+      for (int i = sz - 1; i >= 0; --i)
+        res = PairV((Expr(new Quote(list->stxs[i]))).get()->eval(e), res);
       return res;
     }
   }
 
   return NullV();
-}
-
-Value Quote::eval(Assoc &e) { return quoteFromSyn(s); } // quote expression
+} // quote expression
 
 Value MakeVoid::eval(Assoc &e) { return VoidV(); } // (void)
 
