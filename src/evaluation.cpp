@@ -152,83 +152,67 @@ Value Unary::eval(Assoc &e) {
 } // evaluation of single-operator primitive
 
 Value Mult::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return IntegerV(val1 * val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return IntegerV(val1->n * val2->n);
 } // *
 
 Value Plus::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return IntegerV(val1 + val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return IntegerV(val1->n + val2->n);
 } // +
 
 Value Minus::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return IntegerV(val1 - val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return IntegerV(val1->n - val2->n);
 } // -
 
 Value Less::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return BooleanV(val1 < val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return BooleanV(val1->n < val2->n);
 } // <
 
 Value LessEq::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return BooleanV(val1 < val2 || val1 == val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return BooleanV(val1->n <= val2->n);
 } // <=
 
 Value Equal::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return BooleanV(val1 == val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return BooleanV(val1->n == val2->n);
 } // =
 
 Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return BooleanV(val1 > val2 || val1 == val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return BooleanV(val1->n >= val2->n);
 } // >=
 
 Value Greater::evalRator(const Value &rand1, const Value &rand2) {
-  try {
-    int val1 = dynamic_cast<Integer *>(rand1.get())->n;
-    int val2 = dynamic_cast<Integer *>(rand2.get())->n;
-    return BooleanV(val1 > val2);
-  } catch (std::bad_cast &) {
+  auto val1 = dynamic_cast<Integer *>(rand1.get());
+  auto val2 = dynamic_cast<Integer *>(rand2.get());
+  if (!val1 || !val2)
     throw RuntimeError("Type error");
-  }
+  return BooleanV(val1->n > val2->n);
 } // >
 
 bool isEqual(const Value &rand1, const Value &rand2) {
