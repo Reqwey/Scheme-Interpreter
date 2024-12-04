@@ -28,7 +28,7 @@ Value Apply::eval(Assoc &env) {
   auto closure = dynamic_cast<Closure *>(rator.get());
   if (closure) {
     if (closure->parameters.size() != this->rand.size()) {
-      throw std::runtime_error(
+      throw RuntimeError(
           "Expect " + std::to_string(closure->parameters.size()) +
           " argument(s), found " + std::to_string(this->rand.size()));
     }
@@ -42,7 +42,7 @@ Value Apply::eval(Assoc &env) {
     return closure->e.get()->eval(env1);
   }
 
-  throw std::runtime_error("Bad function call");
+  throw RuntimeError("Bad function call");
 } // for function calling
 
 Value Letrec::eval(Assoc &env) {
@@ -66,7 +66,7 @@ Value Var::eval(Assoc &e) {
   if (res.get())
     return res;
   else
-    throw std::runtime_error("Unbound variable: " + x);
+    throw RuntimeError("Unbound variable: " + x);
 
 } // evaluation of variable
 
@@ -157,7 +157,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return IntegerV(val1 * val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // *
 
@@ -167,7 +167,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return IntegerV(val1 + val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // +
 
@@ -177,7 +177,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return IntegerV(val1 - val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // -
 
@@ -187,7 +187,7 @@ Value Less::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return BooleanV(val1 < val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // <
 
@@ -197,7 +197,7 @@ Value LessEq::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return BooleanV(val1 < val2 || val1 == val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // <=
 
@@ -207,7 +207,7 @@ Value Equal::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return BooleanV(val1 == val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // =
 
@@ -217,7 +217,7 @@ Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return BooleanV(val1 > val2 || val1 == val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // >=
 
@@ -227,7 +227,7 @@ Value Greater::evalRator(const Value &rand1, const Value &rand2) {
     int val2 = dynamic_cast<Integer *>(rand2.get())->n;
     return BooleanV(val1 > val2);
   } catch (std::bad_cast &) {
-    throw std::runtime_error("Type error");
+    throw RuntimeError("Type error");
   }
 } // >
 
