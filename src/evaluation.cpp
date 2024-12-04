@@ -321,7 +321,7 @@ Value Car::evalRator(const Value &rand) {
   if (pair)
     return Value(pair->car);
   else
-    return NullV();
+    throw RuntimeError("Type error");
 } // car
 
 Value Cdr::evalRator(const Value &rand) {
@@ -329,5 +329,5 @@ Value Cdr::evalRator(const Value &rand) {
   if (pair)
     return Value(pair->cdr);
   else
-    return NullV();
+    throw RuntimeError("Type error");
 } // cdr
