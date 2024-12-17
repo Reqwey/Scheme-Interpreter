@@ -87,12 +87,10 @@ Value True::eval(Assoc &e) { return BooleanV(true); } // evaluation of #t
 Value False::eval(Assoc &e) { return BooleanV(false); } // evaluation of #f
 
 Value Begin::eval(Assoc &e) {
-  switch (es.size()) {
-  case 0:
+  if (!es.size())
     return NullV();
-  case 1:
-    return es[0].get()->eval(e);
-  default:
+  else {
+    es[0].get()->eval(e);
     es.erase(es.begin());
     return eval(e);
   }
