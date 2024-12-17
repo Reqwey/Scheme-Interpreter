@@ -34,7 +34,18 @@ Expr Identifier::parse(Assoc &env) {
 
   switch (primitives[s]) {
   case E_VOID:
-    return Expr(new MakeVoid());
+  case E_EXIT: {
+    List *st = new List();
+    st->stxs.push_back(Syntax(new Identifier("lambda")));
+
+    st->stxs.push_back(new List());
+    
+    List *stx = new List();
+    stx->stxs.push_back(Syntax(new Identifier(s)));
+    st->stxs.push_back(stx);
+
+    return st->parse(env);
+  }
 
   case E_MUL:
   case E_MINUS:
@@ -83,9 +94,6 @@ Expr Identifier::parse(Assoc &env) {
     return st->parse(env);
   }
 
-  case E_EXIT:
-    return Expr(new Exit());
-
   default:
     break;
   }
@@ -99,8 +107,8 @@ Expr FalseSyntax::parse(Assoc &env) { return Expr(new False()); }
 
 #define checkArgc(num, arr)                                                    \
   if (arr.size() != num) {                                                     \
-    throw RuntimeError("Expect " #num " argument(s), found " +                \
-                        std::to_string(arr.size()));                           \
+    throw RuntimeError("Expect " #num " argument(s), found " +                 \
+                       std::to_string(arr.size()));                            \
   }
 
 Expr List::parse(Assoc &env) {
