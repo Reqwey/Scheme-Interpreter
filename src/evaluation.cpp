@@ -219,6 +219,12 @@ bool isEqual(const Value &rand1, const Value &rand2) {
   if (rand1.get() == rand2.get())
     return true;
 
+  auto bool1 = dynamic_cast<Boolean *>(rand1.get());
+  auto bool2 = dynamic_cast<Boolean *>(rand2.get());
+  if (bool1 && bool2) {
+    return bool1->b == bool2->b;
+  }
+
   auto sym1 = dynamic_cast<Symbol *>(rand1.get());
   auto sym2 = dynamic_cast<Symbol *>(rand2.get());
   if (sym1 && sym2) {
