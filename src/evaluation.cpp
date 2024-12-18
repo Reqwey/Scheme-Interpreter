@@ -62,10 +62,7 @@ Value Letrec::eval(Assoc &env) {
 
   for (auto &i : this->bind) {
     Value val = find(i.first, env2);
-    auto closure = dynamic_cast<Closure *>(val.get());
-    if (closure) {
-      modify(i.first, i.second.get()->eval(env2), env2);
-    }
+    modify(i.first, i.second.get()->eval(env2), env2);
   }
 
   return body.get()->eval(env2);
@@ -166,7 +163,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return IntegerV(val1->n * val2->n);
 } // *
 
@@ -174,7 +171,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return IntegerV(val1->n + val2->n);
 } // +
 
@@ -182,7 +179,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return IntegerV(val1->n - val2->n);
 } // -
 
@@ -190,7 +187,7 @@ Value Less::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return BooleanV(val1->n < val2->n);
 } // <
 
@@ -198,7 +195,7 @@ Value LessEq::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return BooleanV(val1->n <= val2->n);
 } // <=
 
@@ -206,7 +203,7 @@ Value Equal::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return BooleanV(val1->n == val2->n);
 } // =
 
@@ -214,7 +211,7 @@ Value GreaterEq::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return BooleanV(val1->n >= val2->n);
 } // >=
 
@@ -222,7 +219,7 @@ Value Greater::evalRator(const Value &rand1, const Value &rand2) {
   auto val1 = dynamic_cast<Integer *>(rand1.get());
   auto val2 = dynamic_cast<Integer *>(rand2.get());
   if (!val1 || !val2)
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
   return BooleanV(val1->n > val2->n);
 } // >
 
@@ -340,7 +337,7 @@ Value Car::evalRator(const Value &rand) {
   if (pair)
     return Value(pair->car);
   else
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
 } // car
 
 Value Cdr::evalRator(const Value &rand) {
@@ -348,5 +345,5 @@ Value Cdr::evalRator(const Value &rand) {
   if (pair)
     return Value(pair->cdr);
   else
-    throw RuntimeError("Type error");
+    throw RuntimeError("Type error on line " + std::to_string(__LINE__));
 } // cdr
