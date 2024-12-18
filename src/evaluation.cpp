@@ -64,7 +64,7 @@ Value Letrec::eval(Assoc &env) {
     Value val = find(i.first, env2);
     auto closure = dynamic_cast<Closure *>(val.get());
     if (closure) {
-      modify(i.first, ClosureV(closure->parameters, closure->e, env2), env2);
+      modify(i.first, i.second.get()->eval(env2), env2);
     }
   }
 

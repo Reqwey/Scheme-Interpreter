@@ -124,12 +124,15 @@ Expr List::parse(Assoc &env) {
     auto at_res = reserved_words.find(s);
 
     Value res = find(s, env);
-    auto expression = dynamic_cast<Expression *>(res.get());
-    if (expression) {
-      auto lam = dynamic_cast<Lambda *>(expression->e.get());
-      if (lam)
-        goto apply;
+    if (res.get()) {
+      goto apply;
     }
+    // auto expression = dynamic_cast<Expression *>(res.get());
+    // if (expression) {
+    //   auto lam = dynamic_cast<Lambda *>(expression->e.get());
+    //   if (lam)
+    //     goto apply;
+    // }
 
     if (at_pri == primitives.end() && !stxs.size()) {
       vector<Expr> rands;
@@ -323,29 +326,29 @@ Expr List::parse(Assoc &env) {
 
   auto list = dynamic_cast<List *>(stxs[0].get());
   if (list) {
-    Expr parsed = list->parse(env);
-    auto lambda = dynamic_cast<Lambda *>(parsed.get());
-    if (lambda) {
-      checkArgc(lambda->x.size(), this->stxs, __LINE__);
+    // Expr parsed = list->parse(env);
+    // auto lambda = dynamic_cast<Lambda *>(parsed.get());
+    // if (lambda) {
+    //   checkArgc(lambda->x.size(), this->stxs, __LINE__);
 
-      Assoc env1 = env;
+    //   Assoc env1 = env;
 
-      vector<Expr> rands;
-      for (size_t i = 1; i < stxs.size(); ++i) {
-        Expr e = stxs[i].parse(env);
-        rands.push_back(e);
-        env1 = extend(lambda->x[i - 1], ExpressionV(e), env1);
-      }
+    //   vector<Expr> rands;
+    //   for (size_t i = 1; i < stxs.size(); ++i) {
+    //     Expr e = stxs[i].parse(env);
+    //     rands.push_back(e);
+    //     env1 = extend(lambda->x[i - 1], ExpressionV(e), env1);
+    //   }
 
-      return Expr(new Apply(list->parse(env1), rands));
-    } else {
-      vector<Expr> rands;
-      for (size_t i = 1; i < stxs.size(); ++i) {
-        Expr e = stxs[i].parse(env);
-        rands.push_back(e);
-      }
-      return Expr(new Apply(stxs[0].parse(env), rands));
+    //   return Expr(new Apply(list->parse(env1), rands));
+    // } else {
+    vector<Expr> rands;
+    for (size_t i = 1; i < stxs.size(); ++i) {
+      Expr e = stxs[i].parse(env);
+      rands.push_back(e);
     }
+    return Expr(new Apply(stxs[0].parse(env), rands));
+    // }
   }
 
   throw RuntimeError("Unknown operation");
