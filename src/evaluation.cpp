@@ -11,7 +11,7 @@ extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
 
 Value Let::eval(Assoc &env) {
-  Assoc env1 = Assoc(env);
+  Assoc env1 = env;
   for (auto &i : bind) {
     env1 = extend(i.first, i.second.get()->eval(env), env1);
   }
@@ -46,16 +46,23 @@ Value Apply::eval(Assoc &env) {
 } // for function calling
 
 Value Letrec::eval(Assoc &env) {
-  Assoc env1 = Assoc(env);
-
+  Assoc env1 = env;
   for (auto &i : this->bind) {
     env1 = extend(i.first, NullV(), env1);
   }
 
-  Assoc env2 = Assoc(env1);
+  Assoc env2 = env;
 
   for (auto &i : this->bind) {
-    modify(i.first, i.second.get()->eval(env1), env2);
+    env2 = extend(i.first, i.second.get()->eval(env1), env2);
+  }
+
+  for (auto &i : this->bind) {
+    Value val = find(i.first, env2);
+    auto closure = dynamic_cast<Closure *>(val.get());
+    if (closure) {
+      modify(i.first, ClosureV(closure->parameters, closure->e, env2), env2);
+    }
   }
 
   return body.get()->eval(env2);
@@ -63,9 +70,11 @@ Value Letrec::eval(Assoc &env) {
 
 Value Var::eval(Assoc &e) {
   Value res = find(x, e);
-  if (res.get())
+  if (res.get()) {
+    if (dynamic_cast<Null *>(res.get()))
+      throw RuntimeError("Unusable variable: " + x);
     return res;
-  else
+  } else
     throw RuntimeError("Unbound variable: " + x);
 
 } // evaluation of variable

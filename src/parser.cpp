@@ -233,7 +233,7 @@ Expr List::parse(Assoc &env) {
         auto args = (dynamic_cast<List *>(stxs[0].get()))->stxs;
         vector<string> transformedArgs;
 
-        Assoc env1 = Assoc(env);
+        Assoc env1 = env;
 
         for (auto &syn : args) {
           string s = dynamic_cast<Identifier *>(syn.get())->s;
@@ -250,7 +250,7 @@ Expr List::parse(Assoc &env) {
         auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
         vector<std::pair<string, Expr>> transformedHeader;
 
-        Assoc env1 = Assoc(env);
+        Assoc env1 = env;
 
         for (auto &syn : header) {
           auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
@@ -273,7 +273,7 @@ Expr List::parse(Assoc &env) {
         auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
         vector<std::pair<string, Expr>> transformedHeader;
 
-        Assoc env1 = Assoc(env);
+        Assoc env1 = env;
 
         for (auto &syn : header) {
           auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
