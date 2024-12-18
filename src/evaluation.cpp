@@ -54,7 +54,10 @@ Value Letrec::eval(Assoc &env) {
   Assoc env2 = env;
 
   for (auto &i : this->bind) {
-    env2 = extend(i.first, i.second.get()->eval(env1), env2);
+    Value val = i.second.get()->eval(env1);
+    if (val.get()->v_type == V_NULL)
+      throw RuntimeError("Unusable variable");
+    env2 = extend(i.first, val, env2);
   }
 
   for (auto &i : this->bind) {
@@ -70,11 +73,9 @@ Value Letrec::eval(Assoc &env) {
 
 Value Var::eval(Assoc &e) {
   Value res = find(x, e);
-  if (res.get()) {
-    if (dynamic_cast<Null *>(res.get()))
-      throw RuntimeError("Unusable variable: " + x);
+  if (res.get())
     return res;
-  } else
+  else
     throw RuntimeError("Unbound variable: " + x);
 
 } // evaluation of variable

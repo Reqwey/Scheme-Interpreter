@@ -39,7 +39,7 @@ Expr Identifier::parse(Assoc &env) {
     st->stxs.push_back(Syntax(new Identifier("lambda")));
 
     st->stxs.push_back(new List());
-    
+
     List *stx = new List();
     stx->stxs.push_back(Syntax(new Identifier(s)));
     st->stxs.push_back(stx);
@@ -105,10 +105,11 @@ Expr TrueSyntax::parse(Assoc &env) { return Expr(new True()); }
 
 Expr FalseSyntax::parse(Assoc &env) { return Expr(new False()); }
 
-#define checkArgc(num, arr)                                                    \
-  if (arr.size() != num) {                                                     \
-    throw RuntimeError("Expect " #num " argument(s), found " +                 \
-                       std::to_string(arr.size()));                            \
+#define checkArgc(num, arr, line)                                              \
+  if (arr.size() - 1 != num) {                                                 \
+    throw RuntimeError("Line " + std::to_string(line) + " expect " +           \
+                       std::to_string(num) + " argument(s), found " +          \
+                       std::to_string(arr.size() - 1));                        \
   }
 
 Expr List::parse(Assoc &env) {
@@ -118,7 +119,6 @@ Expr List::parse(Assoc &env) {
   auto iden = dynamic_cast<Identifier *>(stxs[0].get());
   if (iden) {
     string s = iden->s;
-    stxs.erase(stxs.begin());
 
     auto at_pri = primitives.find(s);
     auto at_res = reserved_words.find(s);
@@ -137,87 +137,87 @@ Expr List::parse(Assoc &env) {
     } else if (at_pri != primitives.end()) {
       switch (primitives[s]) {
       case E_MUL:
-        checkArgc(2, stxs);
-        return Expr(new Mult(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Mult(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_MINUS:
-        checkArgc(2, stxs);
-        return Expr(new Minus(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Minus(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_PLUS:
-        checkArgc(2, stxs);
-        return Expr(new Plus(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Plus(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_LT:
-        checkArgc(2, stxs);
-        return Expr(new Less(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Less(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_LE:
-        checkArgc(2, stxs);
-        return Expr(new LessEq(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new LessEq(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_EQ:
-        checkArgc(2, stxs);
-        return Expr(new Equal(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Equal(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_GE:
-        checkArgc(2, stxs);
-        return Expr(new GreaterEq(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new GreaterEq(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_GT:
-        checkArgc(2, stxs);
-        return Expr(new Greater(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Greater(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_VOID:
-        checkArgc(0, stxs);
+        checkArgc(0, stxs, __LINE__);
         return Expr(new MakeVoid());
 
       case E_EQQ:
-        checkArgc(2, stxs);
-        return Expr(new IsEq(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new IsEq(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_BOOLQ:
-        checkArgc(1, stxs);
-        return Expr(new IsBoolean(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsBoolean(stxs[1].parse(env)));
 
       case E_INTQ:
-        checkArgc(1, stxs);
-        return Expr(new IsFixnum(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsFixnum(stxs[1].parse(env)));
 
       case E_NULLQ:
-        checkArgc(1, stxs);
-        return Expr(new IsNull(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsNull(stxs[1].parse(env)));
 
       case E_PAIRQ:
-        checkArgc(1, stxs);
-        return Expr(new IsPair(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsPair(stxs[1].parse(env)));
 
       case E_PROCQ:
-        checkArgc(1, stxs);
-        return Expr(new IsProcedure(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsProcedure(stxs[1].parse(env)));
 
       case E_SYMBOLQ:
-        checkArgc(1, stxs);
-        return Expr(new IsSymbol(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new IsSymbol(stxs[1].parse(env)));
 
       case E_CONS:
-        checkArgc(2, stxs);
-        return Expr(new Cons(stxs[0].parse(env), stxs[1].parse(env)));
+        checkArgc(2, stxs, __LINE__);
+        return Expr(new Cons(stxs[1].parse(env), stxs[2].parse(env)));
 
       case E_NOT:
-        checkArgc(1, stxs);
-        return Expr(new Not(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new Not(stxs[1].parse(env)));
 
       case E_CAR:
-        checkArgc(1, stxs);
-        return Expr(new Car(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new Car(stxs[1].parse(env)));
 
       case E_CDR:
-        checkArgc(1, stxs);
-        return Expr(new Cdr(stxs[0].parse(env)));
+        checkArgc(1, stxs, __LINE__);
+        return Expr(new Cdr(stxs[1].parse(env)));
 
       case E_EXIT:
-        checkArgc(0, stxs);
+        checkArgc(0, stxs, __LINE__);
         return Expr(new Exit());
 
       default:
@@ -228,9 +228,9 @@ Expr List::parse(Assoc &env) {
     if (at_res != reserved_words.end()) {
       switch (reserved_words[s]) {
       case E_LAMBDA: {
-        checkArgc(2, stxs);
+        checkArgc(2, stxs, __LINE__);
 
-        auto args = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+        auto args = (dynamic_cast<List *>(stxs[1].get()))->stxs;
         vector<string> transformedArgs;
 
         Assoc env1 = env;
@@ -238,16 +238,17 @@ Expr List::parse(Assoc &env) {
         for (auto &syn : args) {
           string s = dynamic_cast<Identifier *>(syn.get())->s;
           transformedArgs.push_back(s);
-          env1 = extend(s, VoidV(), env1);
+          if (!find(s, env).get())
+            env1 = extend(s, VoidV(), env1);
         }
 
-        return Expr(new Lambda(transformedArgs, stxs[1].parse(env1)));
+        return Expr(new Lambda(transformedArgs, stxs[2].parse(env1)));
       }
 
       case E_LET: {
-        checkArgc(2, stxs);
+        checkArgc(2, stxs, __LINE__);
 
-        auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+        auto header = (dynamic_cast<List *>(stxs[1].get()))->stxs;
         vector<std::pair<string, Expr>> transformedHeader;
 
         Assoc env1 = env;
@@ -255,7 +256,7 @@ Expr List::parse(Assoc &env) {
         for (auto &syn : header) {
           auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
 
-          checkArgc(2, syn_v);
+          checkArgc(1, syn_v, __LINE__);
 
           string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
           Expr parsed = syn_v[1].parse(env);
@@ -264,13 +265,13 @@ Expr List::parse(Assoc &env) {
           env1 = extend(bind, ExpressionV(parsed), env1);
         }
 
-        return Expr(new Let(transformedHeader, stxs[1].parse(env1)));
+        return Expr(new Let(transformedHeader, stxs[2].parse(env1)));
       }
 
       case E_LETREC: {
-        checkArgc(2, stxs);
+        checkArgc(2, stxs, __LINE__);
 
-        auto header = (dynamic_cast<List *>(stxs[0].get()))->stxs;
+        auto header = (dynamic_cast<List *>(stxs[1].get()))->stxs;
         vector<std::pair<string, Expr>> transformedHeader;
 
         Assoc env1 = env;
@@ -278,7 +279,7 @@ Expr List::parse(Assoc &env) {
         for (auto &syn : header) {
           auto syn_v = (dynamic_cast<List *>(syn.get()))->stxs;
 
-          checkArgc(2, syn_v);
+          checkArgc(1, syn_v, __LINE__);
 
           string bind = (dynamic_cast<Identifier *>(syn_v[0].get()))->s;
           Expr parsed = syn_v[1].parse(env);
@@ -287,26 +288,26 @@ Expr List::parse(Assoc &env) {
           env1 = extend(bind, ExpressionV(parsed), env1);
         }
 
-        return Expr(new Letrec(transformedHeader, stxs[1].parse(env1)));
+        return Expr(new Letrec(transformedHeader, stxs[2].parse(env1)));
       }
 
       case E_IF:
-        checkArgc(3, stxs);
+        checkArgc(3, stxs, __LINE__);
 
         return Expr(
-            new If(stxs[0].parse(env), stxs[1].parse(env), stxs[2].parse(env)));
+            new If(stxs[1].parse(env), stxs[2].parse(env), stxs[3].parse(env)));
 
       case E_BEGIN: {
         vector<Expr> es;
-        for (auto &i : stxs)
-          es.push_back(i.parse(env));
+        for (size_t i = 1; i < stxs.size(); ++i)
+          es.push_back(stxs[i].parse(env));
         return Expr(new Begin(es));
       }
 
       case E_QUOTE: {
-        checkArgc(1, stxs);
+        checkArgc(1, stxs, __LINE__);
 
-        return Expr(new Quote(stxs[0]));
+        return Expr(new Quote(stxs[1]));
       }
 
       default:
@@ -315,19 +316,36 @@ Expr List::parse(Assoc &env) {
     }
   apply:
     vector<Expr> rands;
-    for (auto &i : stxs)
-      rands.push_back(i.parse(env));
+    for (size_t i = 1; i < stxs.size(); ++i)
+      rands.push_back(stxs[i].parse(env));
     return Expr(new Apply(new Var(s), rands));
   }
 
   auto list = dynamic_cast<List *>(stxs[0].get());
   if (list) {
-    vector<Expr> rands;
-    for (size_t i = 1; i < stxs.size(); ++i) {
-      rands.push_back(stxs[i].parse(env));
-    }
+    Expr parsed = list->parse(env);
+    auto lambda = dynamic_cast<Lambda *>(parsed.get());
+    if (lambda) {
+      checkArgc(lambda->x.size(), this->stxs, __LINE__);
 
-    return Expr(new Apply(list->parse(env), rands));
+      Assoc env1 = env;
+
+      vector<Expr> rands;
+      for (size_t i = 1; i < stxs.size(); ++i) {
+        Expr e = stxs[i].parse(env);
+        rands.push_back(e);
+        env1 = extend(lambda->x[i - 1], ExpressionV(e), env1);
+      }
+
+      return Expr(new Apply(list->parse(env1), rands));
+    } else {
+      vector<Expr> rands;
+      for (size_t i = 1; i < stxs.size(); ++i) {
+        Expr e = stxs[i].parse(env);
+        rands.push_back(e);
+      }
+      return Expr(new Apply(stxs[0].parse(env), rands));
+    }
   }
 
   throw RuntimeError("Unknown operation");
