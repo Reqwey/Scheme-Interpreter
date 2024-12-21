@@ -249,9 +249,13 @@ bool isEqual(const Value &rand1, const Value &rand2) {
 
   auto nul1 = dynamic_cast<Null *>(rand1.get());
   auto nul2 = dynamic_cast<Null *>(rand2.get());
+  if (nul1 && nul2) {
+    return true;
+  }
+
   auto void1 = dynamic_cast<Void *>(rand1.get());
   auto void2 = dynamic_cast<Void *>(rand2.get());
-  if ((nul1 || void1) && (nul2 || void2)) {
+  if (void1 && void2) {
     return true;
   }
 
