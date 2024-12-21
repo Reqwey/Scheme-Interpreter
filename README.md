@@ -17,7 +17,7 @@
 
 Scheme 是一种函数式语言，它主要有两种特性：
 
-- 采用 S-表达式，除了 `int` 类型与变量 `var`，其余语法形如 `(expr exprs ...)`，例如 `(+ 1 3)`
+- 采用 S-表达式，除了 `Integer` 、`Boolean` 类型与变量 `var`，其余语法形如 `(expr exprs ...)`，例如 `(+ 1 3)`
 - 函数也被视作一个变量
 
 如果你对 Scheme 感兴趣，可以在网上自行查阅相关信息。本次大作业并不需要你实现 Scheme 所有的功能，因此阅读文档即可完成所有的需求。
@@ -49,7 +49,7 @@ cmake -B build
 cmake --build build --target code
 ```
 
-之后， `myscheme` 程序会生成在子目录 `bin` 下， 在根目录下执行
+之后， `code` 程序会生成在子目录 `bin` 下， 在根目录下执行
 
 ```
 ./code
@@ -152,11 +152,11 @@ R = 119
 
 ```
 expr   -->  Integer
-		| 	Boolean
+	|   Boolean
         |   (quote datum)
         |   var
         |   (if expr expr expr)
-        |   (begin expr*)
+        |   (begin expr expr*)
         |   (lambda (var*) expr)
         |   (let ([var expr]*) expr)
         |   (letrec ([var expr]*) expr)
@@ -215,7 +215,7 @@ scm> -1
 
 提示：在前三个子任务中，你只需要考虑 `primitive` 在 `(primitive expr*)` 中出现的情况。因此，你可以直接将 `syntax` parse 为对应的 `expr`（如 `/src/expr.hpp` 中的 `Plus` 等），然后进行相应的处理。
 
-特别地，当 `primitive` 接收的参数个数或参数类型不符合要求时，你应当及时抛出异常（详见 `RE.hpp` 与 `main.cpp`）。**本次大作业不要求你抛出的异常指明具体的问题，你只需要抛出 `RuntimeError(str)` 即可，`str` 可以是任意字符串。**
+特别地，在 eval 时，当 `primitive` 接收的参数个数或参数类型不符合要求时，你应当及时抛出异常（详见 `RE.hpp` 与 `main.cpp`）。**本次大作业不要求你抛出的异常指明具体的问题，你只需要抛出 `RuntimeError(str)` 即可，`str` 可以是任意字符串。**
 
 样例：
 
@@ -315,7 +315,7 @@ scm> #f
 
 ```
 scm> (quote 1)
-1 //注意这里是 Integer 类型
+1 // 注意这里是 Integer 类型
 scm> (quote #t)
 #t // 注意这里是 Boolean 类型
 scm> (quote (+ 1 2 3))
@@ -339,6 +339,11 @@ scheme // 注意这里是 Symbol 类型
  |	(cons expr1 expr2)
  | 	(car expr)
  |	(cdr expr)
+ |	(< expr1 expr2)
+ |	(<= expr1 expr2)
+ |	(= expr1 expr2)
+ |	(>= expr1 expr2)
+ |	(> expr1 expr2)
 ```
 
 `(void)` 不接受任何参数，值为 `Void`。
@@ -346,6 +351,8 @@ scheme // 注意这里是 Symbol 类型
 `(cons expr1 expr2)` 表示构造一个 `Pair`，其左值为 `expr1` 的值，右值 `expr2` 的值。它接受两个任意类型的参数，返回对应的 `Pair`。
 
 `(car expr)` 与 `(cdr expr)` 分别表示取一个 `Pair` 的左值和右值。它接受一个类型为 `Pair` 的参数，返回对应的结果。
+
+`(< expr1 expr2)`、`(<= expr1 expr2)`、`(= expr1 expr2)`、`(>= expr1 expr2)`、`(> expr1 expr2)` 表示对应的整数比较。它们接受两个类型为 `Integer` 的参数，值为对应的比较结果，类型为 `Boolean`。
 
 样例：
 
@@ -415,6 +422,14 @@ scm> (if (void) undefined 1)
 RuntimeError // 报错，undefined 变量未定义
 scm> (if #f undefined 1)
 1
+scm> (if #t 1 (+ 1))
+1
+scm> (< 1 2)
+#t
+scm> (>= 1 2)
+#f
+scm> (= #t 1)
+RuntimeError // expr1 的类型不匹配
 ```
 
 #### 语法：`(primitive expr*)`
@@ -444,8 +459,6 @@ scm> (if #f undefined 1)
  |	(eq? expr1 expr2)
 ```
 
-`(< expr1 expr2)`、`(<= expr1 expr2)`、`(= expr1 expr2)`、`(>= expr1 expr2)`、`(> expr1 expr2)` 表示对应的整数比较。它们接受两个类型为 `Integer` 的参数，值为对应的比较结果，类型为 `Boolean`。
-
 `(not expr)` 表示取反操作。它接受一个任意类型的参数，值为对应的取反结果，类型为 `Boolean`。当 `expr` 的值为 `#f` 时，该表达式的值为 `#t`，否则为 `#f`。请注意，它与 `(if expr1 expr2 expr3)` 一样，将 `0` 视为 `#t`。
 
 `(fixnum? expr)`、`(boolean? expr)`、`(null? expr)`、`(pair? expr)`、`(symbol? expr)` 分别表示 `expr` 的值的类型是否为 `Integer`、`Boolean`、`Null`、`Pair`、`Symbol`。它们接受一个任意类型的参数，值为对应的结果，类型为 `Boolean`。
@@ -463,12 +476,6 @@ scm> (if #f undefined 1)
 样例：
 
 ```
-scm> (< 1 2)
-#t
-scm> (>= 1 2)
-#f
-scm> (= #t 1)
-RuntimeError // expr1 的类型不匹配
 scm> (not #f)
 #t
 scm> (not (void))
@@ -530,15 +537,21 @@ expr   -->  Integer
 
 任何 `Identifier` 都可以被解释成 `var`，包括 `primitives` 与 `reserve_words` 中的字符串，例如 `+` 与 `quote` 也可以是变量名。
 
+变量名可以包含大小写字母（Scheme 对大小写敏感）、数字以及 `?!.+-*/<=>:$%&_~@` 中的字符。**在本次大作业中，我们规定：**
+
+- **变量名的第一个字符不能为数字、`.@` 中的字符**
+- **如果字符串可以被识别为一个数字，那么它会被优先识别为数字**，例如 `1`、`-1`、`+123`、`.123`、`+124.`、`1e-3`
+
 注意：
 
 - 当该变量在当前作用域未定义时，你的解释器应当输出 `RuntimeError`
 - 变量名可以与 `primitives`、`reserve_words` 重合
+- 变量名中的字符可以为除了 `#`、`'`、`"`、` 任意非空白字符，但第一个字符不能为数字
 
 样例：
 
 ```
-scm> void // void 变量在当前作用域未定义
+scm> undefined // undefined 变量在当前作用域未定义
 RuntimeError
 scm> + // + 作为 primitive，是一个函数
 #<procedure>
@@ -571,7 +584,7 @@ scm> (lambda (void) undefined)
 
 ##### 语法：`(expr expr*)`
 
-`(expr expr*)` 表示函数调用，其中 `expr` 的类型应为 `Closure`，`expr*` 的数量应与 `expr` 对应的函数参数数量相等，否则你的解释器应该输出 `RuntimeError`。若 `expr` 为 `primitive`，那么你还需要检查参数类型是否满足要求。
+`(expr expr*)` 表示函数调用，其中 `expr` 的类型应为 `Closure`，eval 时 `expr*` 的数量应与 `expr` 对应的函数参数数量相等，否则你的解释器应该输出 `RuntimeError`。若 `expr` 为 `primitive`，那么你还	需要检查参数类型是否满足要求。
 
 假设 `expr` 对应的 `Clorsure` 类型为 `clos`。在求值时，我们首先在当前作用域对 `expr*` 进行求值，将其与 `expr` 中对应的形参绑定后将其加入 `clos` 的作用域中，形成一个新的作用域，然后在这个新的作用域下对 `clos` 内部的函数体进行求值。
 
@@ -686,13 +699,14 @@ scm> (let ([+ -]) (+ 2 1))
 1. 编写强壮的数据点，使得：
    	- 标准scheme能够通过你的数据点
    	- 有部分OJ上通过评测的同学通不过你的数据点
-   	- 你可以提交最多3组这样的数据点。每个数据点每让一位通过评测的同学WA，你将获得1pt附加分。（WA的同学不会扣分）
+   	- 你的数据点只包含本文档涉及的语法及规范
+   	- 你可以提交最多3组这样的数据点，每组数据点只能包含一个expr。每个数据点每让一位通过评测的同学WA，你将获得2pts的附加分。（WA的同学不会扣分）
    	- 但是，如果你提交了数据点，却没有任何一组数据点让任何已经通过的评测WA，每提交1组数据点你将被扣去1pt。
-2. 在我们的Scheme Interpreter中, 一个函数的两个参数的计算顺序不会对结果产生影响, 甚至同时 (交替) 计算也不会. 请你实现这种多线程并行计算来加速. （5pt）
+2. 在我们的Scheme Interpreter中, 一个函数的两个参数的计算顺序不会对结果产生影响, 甚至同时 (交替) 计算也不会. 请你实现这种多线程并行计算来加速. （5pts）
 3. 将求值策略改为懒惰求值. 整体原则是, 任意一个表达式, 除非我们需要它的值来继续下一步操作, 它就不应该被求值. 比如对于 `(car e)`, 我们只需要求值 `e` 到 `(cons e1 e2)` 的程度, 而不能求值 `e1` 和 `e2`. 这样做有一个显然的坏处: 如果一个参数在函数体中出现了多次, 那么每次都要重新计算. 解决方法也很简单, 对于同样的一个 Expr, 我们需要记忆它的求值结果, 如果需要求值时发现
-已经求过, 直接返回值即可. （10pt）
-4. 加入set-car!, set-cdr! 并实现垃圾回收. 建议查询*标记-回收*算法。（15pt）
-5. 试图利用 weak_ptr 保证内存不泄漏。（20pt）
+已经求过, 直接返回值即可. （10pts）
+4. 加入set-car!, set-cdr! 并实现垃圾回收. 建议查询*标记-回收*算法。（15pts）
+5. 试图利用 weak_ptr 保证内存不泄漏。（20pts）
 
 ### 帮助
 
