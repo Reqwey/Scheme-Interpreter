@@ -61,7 +61,7 @@ Value Letrec::eval(Assoc &env) {
   }
 
   for (auto &i : this->bind) {
-    Value val = find(i.first, env2);
+    Value val = find(i.first, env2);    
     modify(i.first, i.second.get()->eval(env2), env2);
   }
 
@@ -130,11 +130,13 @@ Value Quote::eval(Assoc &e) {
       return NullV();
     } else {
       size_t sz = list->stxs.size();
-      if (sz == 3) {
-        auto isDot = dynamic_cast<Identifier *>(list->stxs[1].get());
+      if (sz >= 3) {
+        auto isDot = dynamic_cast<Identifier *>(list->stxs[sz - 2].get());
         if (isDot && isDot->s == ".") {
-          return PairV((Expr(new Quote(list->stxs[0]))).get()->eval(e),
-                       (Expr(new Quote(list->stxs[2]))).get()->eval(e));
+          Value res = Expr(new Quote(list->stxs[sz - 1])).get()->eval(e);
+          for (int i = sz - 3; i >= 0; --i)
+            res = PairV((Expr(new Quote(list->stxs[i]))).get()->eval(e), res);
+          return res;
         }
       }
       Value res = NullV();
